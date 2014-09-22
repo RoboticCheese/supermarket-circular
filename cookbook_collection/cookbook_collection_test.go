@@ -17,6 +17,27 @@ func start_httptest() (*httptest.Server) {
   return ts
 }
 
+func Test_NewFromUniverse_1(t *testing.T) {
+  ts := start_httptest()
+  defer ts.Close()
+  cc, err := new(CookbookCollection).NewFromUniverse(ts.URL)
+  if err != nil {
+    t.Fatalf("Expected no error, got: %s", err)
+  }
+  if len(cc.Cookbooks) != 1 {
+    t.Fatalf("Expected collection length 1, got: %d", len(cc.Cookbooks))
+  }
+  if cc.Cookbooks[0].Name != "mailcatcher" {
+    t.Fatalf("Expected mailcatcher cookbook, got: %s", cc.Cookbooks[0].Name)
+  }
+  if len(cc.Cookbooks[0].Versions) != 1 {
+    t.Fatalf("Expected Versions length 1, got: %d", len(cc.Cookbooks[0].Versions))
+  }
+  if cc.Cookbooks[0].Versions[0] != "0.1.0" {
+    t.Fatalf("Expected version 0.1.0, got: %s", cc.Cookbooks[0].Versions[0])
+  }
+}
+
 func Test_Merge_1(t *testing.T) {
   oldcc := CookbookCollection{[]cookbook.Cookbook{
     {"apache", []string{"0.1.0"}},

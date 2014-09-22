@@ -27,6 +27,15 @@ type CookbookCollection struct {
   Cookbooks []cookbook.Cookbook
 }
 
+func (cc *CookbookCollection) NewFromUniverse(url string) (*CookbookCollection, error) {
+  univ, err := cc.universe(url)
+  if err != nil {
+    return cc, err
+  }
+  cc, err = cc.cc_from_universe(univ)
+  return cc, err
+}
+
 func (old_cc *CookbookCollection) Merge(new_cc CookbookCollection) (*CookbookCollection, error) {
   for _, cookbook := range new_cc.Cookbooks {
     if !old_cc.contains(cookbook) {
