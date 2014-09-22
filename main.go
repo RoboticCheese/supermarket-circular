@@ -3,6 +3,7 @@ package main
 import (
   "log"
   "os"
+  "time"
   "github.com/RoboticCheese/supermarket-circular/cookbook_collection"
 )
 
@@ -26,4 +27,23 @@ func main() {
     log.Printf("Read cookbook: '%s', versions: '%s'", cb.Name, cb.Versions)
   }
   log.Printf("Initialization complete!")
+
+  for ;; {
+    log.Printf("Update complete! Sleeping for 60s...")
+    time.Sleep(time.Second * 60)
+
+    log.Printf("Checking for updated cookbooks...")
+    updates, err := collection.Update()
+    if err != nil {
+      log.Printf("WARNING: Error occurred during update: '%s'", err)
+      continue
+    }
+    for _, cb := range updates.Cookbooks {
+      for _, version := range cb.Versions {
+        log.Printf("Found new entry, cookbook: '%s', version: '%s'",
+                   cb.Name,
+                   version)
+      }
+    }
+  }
 }

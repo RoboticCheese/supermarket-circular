@@ -56,16 +56,16 @@ func Test_Merge_2(t *testing.T) {
   }
 }
 
-func Test_contains_1(t *testing.T) {
+func Test_Contains_1(t *testing.T) {
   c := Cookbook{"test", []string{"0.1.0", "0.2.0"}}
-  if c.contains("0.2.0") != true {
+  if c.Contains("0.2.0") != true {
     t.Fatalf("Cookbook should have contained version and returned true")
   }
 }
 
-func Test_contains_2(t *testing.T) {
+func Test_Contains_2(t *testing.T) {
   c := Cookbook{"test", []string{"0.1.0", "0.2.0"}}
-  if c.contains("1.0.0") != false {
+  if c.Contains("1.0.0") != false {
     t.Fatalf("Cookbook should have contained version and returned true")
   }
 }

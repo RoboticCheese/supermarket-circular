@@ -24,11 +24,13 @@ import (
 )
 
 type CookbookCollection struct {
+  URL       string
   Cookbooks []cookbook.Cookbook
 }
 
 func (cc *CookbookCollection) NewFromUniverse(url string) (*CookbookCollection, error) {
-  univ, err := cc.universe(url)
+  cc.URL = url
+  univ, err := cc.universe()
   if err != nil {
     return cc, err
   }
@@ -36,9 +38,42 @@ func (cc *CookbookCollection) NewFromUniverse(url string) (*CookbookCollection, 
   return cc, err
 }
 
+func (cc *CookbookCollection) Update() (*CookbookCollection, error) {
+  latest, err := new(CookbookCollection).NewFromUniverse(cc.URL)
+  if err != nil {
+    return latest, err
+  }
+  diff := new(CookbookCollection)
+  // TODO: Split some of this out into a Diff function
+  for _, cb := range latest.Cookbooks {
+    if !cc.Contains(cb) {
+      diff.Cookbooks = append(diff.Cookbooks, cb)
+    } else {
+      for _, cb1 := range cc.Cookbooks {
+        if cb1.Name == cb.Name {
+          for _, version := range cb.Versions {
+            if !cb1.Contains(version) {
+              if !diff.Contains(cb) {
+                diff.Cookbooks = append(diff.Cookbooks, cookbook.Cookbook{cb.Name, []string{}})
+              }
+              for k, dcb := range diff.Cookbooks {
+                if dcb.Name == cb.Name {
+                  diff.Cookbooks[k].Versions = append(diff.Cookbooks[k].Versions, version)
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  _, err = cc.Merge(*diff)
+  return diff, err
+}
+
 func (old_cc *CookbookCollection) Merge(new_cc CookbookCollection) (*CookbookCollection, error) {
   for _, cookbook := range new_cc.Cookbooks {
-    if !old_cc.contains(cookbook) {
+    if !old_cc.Contains(cookbook) {
       old_cc.Cookbooks = append(old_cc.Cookbooks, cookbook)
     } else {
       // TODO: Make contains return an index to save the second loop
@@ -52,7 +87,7 @@ func (old_cc *CookbookCollection) Merge(new_cc CookbookCollection) (*CookbookCol
   return old_cc, nil
 }
 
-func (cc *CookbookCollection) contains(cb cookbook.Cookbook) (bool) {
+func (cc *CookbookCollection) Contains(cb cookbook.Cookbook) (bool) {
   for _, cur := range cc.Cookbooks {
     if cur.Name == cb.Name {
       return true
@@ -80,8 +115,8 @@ func (cc *CookbookCollection) cc_from_universe(universe []byte) (*CookbookCollec
   return cc, nil
 }
 
-func (cc *CookbookCollection) universe(url string) (body []byte, err error) {
-  resp, err := http.Get(url)
+func (cc *CookbookCollection) universe() (body []byte, err error) {
+  resp, err := http.Get(cc.URL)
   if err != nil {
     return
   }
