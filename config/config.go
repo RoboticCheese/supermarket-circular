@@ -21,7 +21,7 @@ contain:
 
     {
       "supermarket": {
-        "universe_url": "Path to Supermarket's `universe.json` file"
+	      "endpoint": "URL of Supermarket instance, e.g. https://supermarket.getchef.com"
       },
       "twitter": {
         "api_key": "Your Twitter API key, aka 'consumer key'",
@@ -34,48 +34,48 @@ contain:
 package config
 
 import (
-  "encoding/json"
-  "io"
-  "os"
+	"encoding/json"
+	"io"
+	"os"
 )
 
 // SupermarketConfig implements a data structure for config items specific to
 // the Supermarket instance being connected to.
-type SupermarketConfig struct {
-  UniverseURL string `json:"universe_url"`
+type Supermarket struct {
+	Endpoint string `json:"endpoint"`
 }
 
 // TwitterConfig imeplements a data structure for config items specific to
 // Twitter.
-type TwitterConfig struct {
-  APIKey            string `json:"api_key"`
-  APISecret         string `json:"api_secret"`
-  AccessToken       string `json:"access_token"`
-  AccessTokenSecret string `json:"access_token_secret"`
+type Twitter struct {
+	APIKey            string `json:"api_key"`
+	APISecret         string `json:"api_secret"`
+	AccessToken       string `json:"access_token"`
+	AccessTokenSecret string `json:"access_token_secret"`
 }
 
 // Struct Config implements a data structure for an application configuration.
 type Config struct {
-  Supermarket SupermarketConfig `json:"supermarket"`
-  Twitter     TwitterConfig     `json:"twitter"`
+	Supermarket Supermarket `json:"supermarket"`
+	Twitter     Twitter     `json:"twitter"`
 }
 
 // New initializes and returns a new Config struct derived from the passed-in
 // config file path.
 func New(filename string) (c *Config, err error) {
-  c = new(Config)
-  f, err := os.Open(filename)
-  if err != nil {
-    return
-  }
-  defer f.Close()
-  err = decodeJSON(f, c)
-  return
+	c = new(Config)
+	f, err := os.Open(filename)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+	err = decodeJSON(f, c)
+	return
 }
 
 // decodeJSON accepts an IO reader and a Config struct and populates that struct
 // with the data read in.
 func decodeJSON(r io.Reader, c *Config) (err error) {
-  decoder := json.NewDecoder(r)
-  return decoder.Decode(c)
+	decoder := json.NewDecoder(r)
+	return decoder.Decode(c)
 }
